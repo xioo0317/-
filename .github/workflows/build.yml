@@ -10,14 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup NDK
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: "26b"
+      - name: Install NDK
+        uses: android-actions/setup-android@v3
 
       - name: Compile
         run: |
-          TOOL="$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          TOOL="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin"
           $TOOL/aarch64-linux-android24-clang -O2 detect.c -o detect
 
       - name: Save binary
