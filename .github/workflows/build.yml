@@ -13,10 +13,10 @@ jobs:
       - name: Install NDK
         uses: android-actions/setup-android@v3
 
-      - name: Compile
+      - name: Compile C++
         run: |
           TOOL="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          $TOOL/aarch64-linux-android24-clang -O2 detect.c -o detect
+          $TOOL/aarch64-linux-android24-clang++ -O2 detect.cpp -o detect
 
       - name: Save binary
         uses: actions/upload-artifact@v4
