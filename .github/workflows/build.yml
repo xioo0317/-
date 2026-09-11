@@ -13,7 +13,7 @@ jobs:
       - name: Setup NDK
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: "27c"
+          ndk-version: "26b"
 
       - name: Compile
         run: |
