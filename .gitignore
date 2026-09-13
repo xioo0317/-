@@ -1,0 +1,21 @@
+# Build
+build/
+cmake-build-* /
+*.o
+*.so
+*.dylib
+*.a
+local_api
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Runtime
+*.log
+.env
