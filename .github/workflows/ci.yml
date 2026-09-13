@@ -1,0 +1,75 @@
+name: Build & Test
+
+on:
+  workflow_dispatch:  # 手动触发
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Debug
+          - Release
+      run_tests:
+        description: 'Run tests after build'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ make
+
+      - name: Download httplib.h
+        run: |
+          mkdir -p third_party
+          curl -L https://raw.githubusercontent.com/yhirose/cpp-httplib/v0.18.3/httplib.h \
+               -o third_party/httplib.h
+          echo "Downloaded httplib.h ($(wc -c < third_party/httplib.h) bytes)"
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=${{ inputs.build_type || 'Release' }}
+
+      - name: Build
+        run: |
+          cd build
+          make -j$(nproc)
+          echo "Build complete: $(ls -lh local_api)"
+
+      - name: Smoke test
+        run: |
+          cd build
+          # 启动服务器（后台）
+          ./local_api &
+          SERVER_PID=$!
+          sleep 2
+
+          # 测试健康检查
+          echo "Testing /health endpoint..."
+          curl -f http://localhost:8080/health || exit 1
+
+          # 测试 API
+          echo "Testing /api/v1/items..."
+          curl -f http://localhost:8080/api/v1/items || exit 1
+
+          # 清理
+          kill $SERVER_PID
+          echo "Smoke test passed"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-api-${{ inputs.build_type || 'Release' }}
+          path: build/local_api
+          retention-days: 7
