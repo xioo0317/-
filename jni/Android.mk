@@ -7,14 +7,14 @@ LOCAL_MODULE := local_api
 
 # Source files
 LOCAL_SRC_FILES := \
-    ../src/main.cpp \
-    ../src/server.cpp \
-    ../src/router.cpp
+    main.cpp \
+    server.cpp \
+    router.cpp
 
 # Include directories
 LOCAL_C_INCLUDES := \
-    $(LOCAL_PATH)/../include \
-    $(LOCAL_PATH)/../third_party
+    $(LOCAL_PATH) \
+    $(LOCAL_PATH)/server
 
 # C++17 standard
 LOCAL_CPPFLAGS := -std=c++17 -frtti -fexceptions
