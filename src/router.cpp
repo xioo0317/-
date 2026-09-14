@@ -1,12 +1,14 @@
 #include "server/router.hpp"
+#include "server/actions.hpp"
 
 #include <httplib.h>
 #include <iostream>
 #include <string>
+#include <functional>
 
 namespace app {
 
-// Simple JSON string field extractor (no external JSON library needed)
+// Simple JSON string field extractor
 static std::string extract_json_string(const std::string& json, const std::string& key) {
     std::string search = "\"" + key + "\"";
     auto pos = json.find(search);
@@ -20,22 +22,19 @@ static std::string extract_json_string(const std::string& json, const std::strin
     return json.substr(pos + 1, end - pos - 1);
 }
 
-void register_routes(httplib::Server& svr) {
+ActionHandler get_action_handler(const std::string& action_name) {
+    if (action_name == "list_items") return handle_list_items;
+    if (action_name == "create_item") return handle_create_item;
+    if (action_name == "update_item") return handle_update_item;
+    if (action_name == "delete_item") return handle_delete_item;
+    return nullptr;
+}
 
-    // ── Health ────────────────────────────────────────────────
-    svr.Get("/health", [](const httplib::Request&, httplib::Response& res) {
-        res.set_content(R"({"status":"ok"})", "application/json");
-    });
+void register_routes(httplib::Server& svr) {
 
     // ── Unified POST endpoint ─────────────────────────────────
     // Request:  POST /api/v1/execute
     // Body:     {"action": "<action_name>"}
-    //
-    // Supported actions:
-    //   list_items   -> returns item list
-    //   create_item  -> creates a new item
-    //   update_item  -> updates an existing item
-    //   delete_item  -> deletes an item
     // ─────────────────────────────────────────────────────────
     svr.Post("/api/v1/execute", [](const httplib::Request& req, httplib::Response& res) {
         std::string action = extract_json_string(req.body, "action");
@@ -49,19 +48,9 @@ void register_routes(httplib::Server& svr) {
         std::cout << "[POST /api/v1/execute] action=" << action
                   << " body=" << req.body << std::endl;
 
-        if (action == "list_items") {
-            res.set_content(R"({"items":[]})", "application/json");
-
-        } else if (action == "create_item") {
-            res.status = 201;
-            res.set_content(R"({"created":true})", "application/json");
-
-        } else if (action == "update_item") {
-            res.set_content(R"({"updated":true})", "application/json");
-
-        } else if (action == "delete_item") {
-            res.set_content(R"({"deleted":true})", "application/json");
-
+        ActionHandler handler = get_action_handler(action);
+        if (handler) {
+            handler(req.body, res);
         } else {
             res.status = 400;
             res.set_content(R"({"error":"unknown action","action":")" + action + "\"}", "application/json");
