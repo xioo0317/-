@@ -6,62 +6,8 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'Build type'
-        required: false
-        default: 'Release'
-        type: choice
-        options:
-          - Debug
-          - Release
-      run_tests:
-        description: 'Run tests after build'
-        required: false
-        default: false
-        type: boolean
 
 jobs:
-  # ── Desktop build (CMake) ────────────────────────────────
-  build-desktop:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake g++ make
-
-      - name: Configure CMake
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=${{ inputs.build_type || 'Release' }}
-
-      - name: Build
-        run: |
-          cd build && make -j$(nproc)
-          echo "Build complete: $(ls -lh local_api)"
-
-      - name: Smoke test
-        run: |
-          cd build
-          ./local_api &
-          SERVER_PID=$!
-          sleep 2
-          echo "Testing /health endpoint..."
-          curl -f http://localhost:8080/health || exit 1
-          echo "Testing /api/v1/items..."
-          curl -f http://localhost:8080/api/v1/items || exit 1
-          kill $SERVER_PID
-          echo "Smoke test passed"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: local-api-desktop-${{ inputs.build_type || 'Release' }}
-          path: build/local_api
-          retention-days: 7
-
-  # ── Android arm64-v8a build (ndk-build) ──────────────────
   build-android:
     runs-on: ubuntu-latest
     steps:
@@ -85,7 +31,6 @@ jobs:
       - name: Verify binary
         run: |
           file libs/arm64-v8a/local_api
-          # Confirm it's an ARM64 ELF executable
           file libs/arm64-v8a/local_api | grep -q "ELF 64-bit.*aarch64" && echo "✓ ARM64 binary verified" || (echo "✗ Not an ARM64 binary"; exit 1)
 
       - name: Upload artifact
