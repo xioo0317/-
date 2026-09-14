@@ -8,7 +8,7 @@ set -euo pipefail
 HOST="${1:-127.0.0.1}"
 PORT="${2:-8080}"
 BASE_URL="http://${HOST}:${PORT}"
-API_URL="${BASE_URL}/api/v1/items"
+EXEC_URL="${BASE_URL}/api/v1/execute"
 
 PASS=0
 FAIL=0
@@ -35,7 +35,7 @@ assert_status() {
 }
 
 echo "==========================================="
-echo "  local_api Test Suite"
+echo "  local_api Test Suite (Unified POST API)"
 echo "  Target: ${BASE_URL}"
 echo "==========================================="
 echo ""
@@ -49,53 +49,61 @@ BODY=$(curl -s "${BASE_URL}/health")
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 2: List Items (initial) ──────────────────────
-echo "[2/6] List Items (empty)"
-HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" "${API_URL}")
-assert_status "GET /api/v1/items returns 200" "200" "$HTTP_CODE"
-
-BODY=$(cat /tmp/resp.json)
-echo "  Response: ${BODY}"
-echo ""
-
-# ── Test 3: Create Item ──────────────────────────────
-echo "[3/6] Create Item"
+# ── Test 2: list_items action ────────────────────────
+echo "[2/6] Action: list_items"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
-    -X POST "${API_URL}" \
+    -X POST "${EXEC_URL}" \
     -H "Content-Type: application/json" \
-    -d '{"name": "test_item", "value": 42}')
-assert_status "POST /api/v1/items returns 201" "201" "$HTTP_CODE"
+    -d '{"action":"list_items"}')
+assert_status "POST /api/v1/execute list_items returns 200" "200" "$HTTP_CODE"
 
 BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 4: Update Item ──────────────────────────────
-echo "[4/6] Update Item (id=1)"
+# ── Test 3: create_item action ───────────────────────
+echo "[3/6] Action: create_item"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
-    -X PUT "${API_URL}/1" \
+    -X POST "${EXEC_URL}" \
     -H "Content-Type: application/json" \
-    -d '{"name": "updated_item", "value": 99}')
-assert_status "PUT /api/v1/items/1 returns 200" "200" "$HTTP_CODE"
+    -d '{"action":"create_item"}')
+assert_status "POST /api/v1/execute create_item returns 201" "201" "$HTTP_CODE"
 
 BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 5: Delete Item ──────────────────────────────
-echo "[5/6] Delete Item (id=1)"
+# ── Test 4: update_item action ───────────────────────
+echo "[4/6] Action: update_item"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
-    -X DELETE "${API_URL}/1")
-assert_status "DELETE /api/v1/items/1 returns 200" "200" "$HTTP_CODE"
+    -X POST "${EXEC_URL}" \
+    -H "Content-Type: application/json" \
+    -d '{"action":"update_item"}')
+assert_status "POST /api/v1/execute update_item returns 200" "200" "$HTTP_CODE"
 
 BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 6: 404 Handler ──────────────────────────────
-echo "[6/6] 404 Handler"
-HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" "${BASE_URL}/nonexistent")
-assert_status "GET /nonexistent returns 404" "404" "$HTTP_CODE"
+# ── Test 5: delete_item action ───────────────────────
+echo "[5/6] Action: delete_item"
+HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+    -X POST "${EXEC_URL}" \
+    -H "Content-Type: application/json" \
+    -d '{"action":"delete_item"}')
+assert_status "POST /api/v1/execute delete_item returns 200" "200" "$HTTP_CODE"
+
+BODY=$(cat /tmp/resp.json)
+echo "  Response: ${BODY}"
+echo ""
+
+# ── Test 6: Unknown action ───────────────────────────
+echo "[6/6] Unknown action"
+HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+    -X POST "${EXEC_URL}" \
+    -H "Content-Type: application/json" \
+    -d '{"action":"foobar"}')
+assert_status "POST /api/v1/execute unknown action returns 400" "400" "$HTTP_CODE"
 
 BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
