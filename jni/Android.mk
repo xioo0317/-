@@ -9,7 +9,11 @@ LOCAL_MODULE := local_api
 LOCAL_SRC_FILES := \
     ../src/main.cpp \
     ../src/server.cpp \
-    ../src/router.cpp
+    ../src/router.cpp \
+    ../src/list_items.cpp \
+    ../src/create_item.cpp \
+    ../src/update_item.cpp \
+    ../src/delete_item.cpp
 
 # Include directories
 LOCAL_C_INCLUDES := \

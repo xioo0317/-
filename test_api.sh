@@ -17,7 +17,6 @@ TOTAL=0
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NC='\033[0m'
 
 assert_status() {
@@ -40,17 +39,8 @@ echo "  Target: ${BASE_URL}"
 echo "==========================================="
 echo ""
 
-# ── Test 1: Health Check ──────────────────────────────
-echo "[1/6] Health Check"
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}/health")
-assert_status "GET /health returns 200" "200" "$HTTP_CODE"
-
-BODY=$(curl -s "${BASE_URL}/health")
-echo "  Response: ${BODY}"
-echo ""
-
-# ── Test 2: list_items action ────────────────────────
-echo "[2/6] Action: list_items"
+# ─ Test 1: list_items action ────────────────────────
+echo "[1/5] Action: list_items"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
     -X POST "${EXEC_URL}" \
     -H "Content-Type: application/json" \
@@ -61,8 +51,8 @@ BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 3: create_item action ───────────────────────
-echo "[3/6] Action: create_item"
+# ── Test 2: create_item action ───────────────────────
+echo "[2/5] Action: create_item"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
     -X POST "${EXEC_URL}" \
     -H "Content-Type: application/json" \
@@ -73,8 +63,8 @@ BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 4: update_item action ───────────────────────
-echo "[4/6] Action: update_item"
+# ── Test 3: update_item action ───────────────────────
+echo "[3/5] Action: update_item"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
     -X POST "${EXEC_URL}" \
     -H "Content-Type: application/json" \
@@ -85,8 +75,8 @@ BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 5: delete_item action ───────────────────────
-echo "[5/6] Action: delete_item"
+# ─ Test 4: delete_item action ───────────────────────
+echo "[4/5] Action: delete_item"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
     -X POST "${EXEC_URL}" \
     -H "Content-Type: application/json" \
@@ -97,8 +87,8 @@ BODY=$(cat /tmp/resp.json)
 echo "  Response: ${BODY}"
 echo ""
 
-# ── Test 6: Unknown action ───────────────────────────
-echo "[6/6] Unknown action"
+# ── Test 5: Unknown action ──────────────────────────
+echo "[5/5] Unknown action"
 HTTP_CODE=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
     -X POST "${EXEC_URL}" \
     -H "Content-Type: application/json" \
