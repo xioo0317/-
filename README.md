@@ -5,19 +5,22 @@ C++17 local HTTP API server built on [cpp-httplib](https://github.com/yhirose/cp
 ## Project Structure
 
 ```
-.
+./
 ├── jni/
 │   ├── Android.mk         # ndk-build module config
-│   ├── Application.mk     # ndk-build app config (arm64-v8a)
+│   └── Application.mk     # ndk-build app config (arm64-v8a)
+├── src/
 │   ├── main.cpp           # Entry point
 │   ├── server.cpp         # Server implementation
-│   ├── router.cpp         # Route handlers
+│   └── router.cpp         # Route handlers
+├── include/
 │   └── server/
 │       ├── server.hpp     # Server wrapper class
 │       └── router.hpp     # Route registration
 ├── third_party/
 │   └── httplib.h          # Header-only HTTP library
-└── test_api.sh            # API test script
+├── test_api.sh            # API test script
+└── README.md
 ```
 
 ## Build
@@ -65,7 +68,7 @@ Server starts on `http://localhost:8080`.
 
 ## Adding New Routes
 
-Edit `jni/router.cpp` and add handlers:
+Edit `src/router.cpp` and add handlers:
 
 ```cpp
 svr.Get("/api/v1/foo", [](const httplib::Request& req, httplib::Response& res) {

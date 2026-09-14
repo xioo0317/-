@@ -5,16 +5,15 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := local_api
 
-# Source files (all inside jni/)
+# Source files
 LOCAL_SRC_FILES := \
-    main.cpp \
-    server.cpp \
-    router.cpp
+    ../src/main.cpp \
+    ../src/server.cpp \
+    ../src/router.cpp
 
 # Include directories
 LOCAL_C_INCLUDES := \
-    $(LOCAL_PATH) \
-    $(LOCAL_PATH)/server \
+    $(LOCAL_PATH)/../include \
     $(LOCAL_PATH)/../third_party
 
 # C++17 standard
